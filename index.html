@@ -1,0 +1,2550 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Чек-лист СМР под AV и ВКС</title>
+
+<link rel="icon" type="image/svg+xml" href="/icon.svg">
+<link rel="icon" type="image/png" href="/icon.png">
+<link rel="apple-touch-icon" href="/icon.png">
+<meta name="theme-color" content="#1f2937">
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 14px;
+  color: #111827;
+  background: #ffffff;
+}
+
+body.hide-impact .impact,
+body.hide-impact .col-impact {
+  display: none;
+}
+
+body.hide-comment .comment,
+body.hide-comment .col-comment {
+  display: none;
+}
+
+h1 {
+  font-size: 21px;
+  margin: 0 0 6px;
+}
+
+h2 {
+  font-size: 16px;
+  margin: 20px 0 8px;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #4b5563;
+  margin-bottom: 14px;
+}
+
+.panel,
+.control-panel,
+.versions-panel,
+.card-control-panel {
+  border: 1px solid #c9c9c9;
+  background: #f9fafb;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+
+.panel {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.control-panel {
+  display: grid;
+  grid-template-columns: 180px 120px 160px 160px 180px 1fr;
+  gap: 8px;
+  align-items: end;
+}
+
+.versions-panel {
+  display: grid;
+  grid-template-columns: 160px 1fr 140px 130px;
+  gap: 8px;
+  align-items: end;
+}
+
+.card-control-panel {
+  display: grid;
+  grid-template-columns: 220px 180px 180px 1fr;
+  gap: 8px;
+  align-items: end;
+  background: #eef6ff;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.field label {
+  font-weight: bold;
+}
+
+input,
+textarea,
+select {
+  font-family: Arial, sans-serif;
+}
+
+.field input,
+.room-name input,
+.modal input,
+.modal textarea,
+.versions-panel select,
+.card-control-panel select {
+  border: 1px solid #c9c9c9;
+  border-radius: 4px;
+  padding: 6px;
+  font-size: 12px;
+}
+
+.rooms {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 7px;
+  border: 1px solid #c9c9c9;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+
+.room-name {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 10px;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.metric {
+  border: 1px solid #c9c9c9;
+  background: #f9fafb;
+  padding: 8px;
+  text-align: center;
+  border-radius: 4px;
+}
+
+.metric div:first-child {
+  font-size: 10px;
+  color: #4b5563;
+}
+
+.metric div:last-child {
+  font-size: 17px;
+  font-weight: bold;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+
+button {
+  padding: 7px 11px;
+  border: 1px solid #1f2937;
+  background: #1f2937;
+  color: #ffffff;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+button.secondary {
+  background: #ffffff;
+  color: #1f2937;
+}
+
+button.danger {
+  background: #991b1b;
+  border-color: #991b1b;
+}
+
+button.small {
+  font-size: 9px;
+  padding: 2px 4px;
+  margin-top: 3px;
+  width: 100%;
+}
+
+.wrap {
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid #c9c9c9;
+  width: 100%;
+  max-width: 100%;
+}
+
+table {
+  border-collapse: collapse;
+  width: auto;
+  min-width: 2200px;
+  table-layout: auto;
+  font-size: 10px;
+}
+
+th,
+td {
+  border: 1px solid #c9c9c9;
+  padding: 4px;
+  vertical-align: middle;
+  text-align: left;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+  line-height: 1.25;
+}
+
+th {
+  background: #f2f4f7;
+  position: static;
+  text-align: left;
+  font-weight: bold;
+}
+
+.cell-limit {
+  display: block;
+  max-height: 3.75em;
+  overflow: hidden;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+  line-height: 1.25;
+}
+
+.section td {
+  background: #dbeafe;
+  font-weight: bold;
+  font-size: 11px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.item {
+  width: 340px;
+  min-width: 340px;
+  max-width: 340px;
+}
+
+.priority {
+  width: 92px;
+  min-width: 92px;
+  max-width: 92px;
+  text-align: left;
+  font-weight: bold;
+  vertical-align: middle;
+}
+
+.method {
+  width: 260px;
+  min-width: 260px;
+  max-width: 260px;
+}
+
+.impact {
+  width: 320px;
+  min-width: 320px;
+  max-width: 320px;
+}
+
+.comment {
+  width: 270px;
+  min-width: 270px;
+  max-width: 270px;
+}
+
+.room {
+  width: 76px;
+  min-width: 76px;
+  max-width: 76px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+select {
+  width: 100%;
+  padding: 3px;
+  font-size: 10px;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  white-space: normal;
+  text-align: left;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+}
+
+#cardModeContainer {
+  display: block;
+}
+
+#tableModeContainer {
+  display: none;
+}
+
+body.table-mode #cardModeContainer {
+  display: none;
+}
+
+body.table-mode #tableModeContainer {
+  display: block;
+}
+
+.card-section {
+  margin-bottom: 14px;
+  border: 1px solid #93c5fd;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.card-section-title {
+  background: #dbeafe;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.card-item {
+  border-top: 1px solid #d1d5db;
+  padding: 10px;
+  background: #ffffff;
+}
+
+.card-row-main {
+  display: grid;
+  grid-template-columns: 1fr 120px 110px;
+  gap: 8px;
+  align-items: start;
+}
+
+.card-point {
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 1.35;
+}
+
+.card-meta {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  font-size: 11px;
+  color: #374151;
+}
+
+.card-meta-block {
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  padding: 6px;
+  border-radius: 4px;
+  line-height: 1.3;
+  max-height: 4.2em;
+  overflow: hidden;
+}
+
+.card-status-cell select,
+.card-priority-cell select {
+  font-size: 11px;
+  padding: 5px;
+}
+
+.card-comment-btn {
+  margin-top: 5px;
+}
+
+.p-blocker {
+  background: #fecaca;
+}
+
+.p-crit {
+  background: #fed7aa;
+}
+
+.p-moderate {
+  background: #fef08a;
+}
+
+.p-minor {
+  background: #bfdbfe;
+}
+
+.p-na {
+  background: #e5e7eb;
+}
+
+.priority-select {
+  width: 100%;
+  font-size: 10px;
+  padding: 3px;
+  border-radius: 4px;
+  border: 1px solid #999;
+  font-weight: bold;
+  text-align: left;
+}
+
+.priority-select.blocker {
+  background: #fecaca;
+  color: #7f1d1d;
+}
+
+.priority-select.crit {
+  background: #fed7aa;
+  color: #7c2d12;
+}
+
+.priority-select.moderate {
+  background: #fef08a;
+  color: #713f12;
+}
+
+.priority-select.minor {
+  background: #bfdbfe;
+  color: #1e3a8a;
+}
+
+.priority-select.na {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.s-yes {
+  background: #dcfce7;
+}
+
+.s-no {
+  background: #fee2e2;
+}
+
+.s-na {
+  background: #e5e7eb;
+}
+
+.s-issue {
+  background: #fef9c3;
+}
+
+.s-block {
+  background: #fecaca;
+  font-weight: bold;
+}
+
+.note {
+  font-size: 11px;
+  color: #4b5563;
+  margin-top: 9px;
+}
+
+#issuesTable {
+  width: auto;
+  min-width: 1900px;
+  table-layout: auto;
+  font-size: 10px;
+}
+
+#issuesTable th {
+  position: static;
+}
+
+.empty {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 8px 0;
+}
+
+.sign {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 28px;
+  font-size: 12px;
+}
+
+.sign div {
+  border-top: 1px solid #000;
+  padding-top: 6px;
+  min-height: 36px;
+}
+
+.modalBox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.hidden {
+  display: none;
+}
+
+.modal {
+  background: #ffffff;
+  width: 720px;
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow: auto;
+  border-radius: 8px;
+  padding: 18px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.25);
+}
+
+.modal h2 {
+  margin-top: 0;
+}
+
+.meta {
+  background: #f3f4f6;
+  border: 1px solid #c9c9c9;
+  padding: 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  margin-bottom: 10px;
+}
+
+.modalGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.modalField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.modal textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.req {
+  font-size: 12px;
+  color: #991b1b;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 1024px) {
+  body {
+    margin: 10px;
+  }
+
+  .panel,
+  .control-panel,
+  .versions-panel,
+  .card-control-panel,
+  .dashboard,
+  .rooms {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .card-row-main,
+  .card-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .wrap {
+    display: block;
+    overflow-x: scroll;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media print {
+  body {
+    margin: 8mm;
+  }
+
+  .actions,
+  .rooms,
+  .modalBox,
+  .control-panel,
+  .versions-panel,
+  .card-control-panel {
+    display: none !important;
+  }
+
+  .wrap {
+    overflow: visible;
+    border: none;
+  }
+
+  table {
+    font-size: 6.5px;
+    width: 100%;
+    min-width: 100%;
+    table-layout: fixed;
+  }
+
+  th,
+  td {
+    padding: 2px;
+    text-align: left;
+    vertical-align: middle;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: normal;
+    hyphens: none;
+    line-height: 1.2;
+  }
+
+  select {
+    border: none;
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    font-size: 6.5px;
+    width: 100%;
+    text-align: left;
+  }
+
+  button.small {
+    display: none !important;
+  }
+
+  @page {
+    size: A3 landscape;
+    margin: 8mm;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<h1>Чек-лист строительной готовности переговорных / кабинетов под AV и ВКС</h1>
+<div class="subtitle">Промежуточная строительная приёмка по этапам СМР</div>
+
+<div class="panel">
+  <div class="field">
+    <label>Дата проверки</label>
+    <input type="date" id="checkDate">
+  </div>
+  <div class="field">
+    <label>Город</label>
+    <input id="city" placeholder="Москва">
+  </div>
+  <div class="field">
+    <label>Название офиса</label>
+    <input id="office" placeholder="Название офиса">
+  </div>
+  <div class="field">
+    <label>Этаж</label>
+    <input id="floor" placeholder="Этаж">
+  </div>
+</div>
+
+<div class="control-panel">
+  <div class="field">
+    <label>Количество переговорных</label>
+    <input type="number" id="roomCountInput" min="1" max="50" value="14">
+  </div>
+
+  <button onclick="applyRoomCount()">Применить</button>
+  <button class="secondary" onclick="toggleImpact()">Скрыть / показать Влияние</button>
+  <button class="secondary" onclick="toggleComment()">Скрыть / показать Комментарий</button>
+  <button class="secondary" onclick="saveData()">Сохранить текущее состояние</button>
+  <div class="note">При уменьшении количества переговорных данные скрытых комнат сохраняются.</div>
+</div>
+
+<div class="versions-panel">
+  <button onclick="saveSnapshot()">Сохранить версию</button>
+  <select id="snapshotList"></select>
+  <button class="secondary" onclick="loadSnapshot()">Загрузить версию</button>
+  <button class="danger" onclick="deleteSnapshot()">Удалить версию</button>
+</div>
+
+<h2>Наименования помещений</h2>
+<div class="rooms" id="rooms"></div>
+
+<div class="dashboard">
+  <div class="metric"><div>Всего проверок</div><div id="mTotal">0</div></div>
+  <div class="metric"><div>Да</div><div id="mYes">0</div></div>
+  <div class="metric"><div>Нет</div><div id="mNo">0</div></div>
+  <div class="metric"><div>Н/П</div><div id="mNa">0</div></div>
+  <div class="metric"><div>Замечания / Блоки</div><div id="mIssues">0</div></div>
+  <div class="metric"><div>Готовность</div><div id="mReady">0%</div></div>
+</div>
+
+<div class="card-control-panel">
+  <div class="field">
+    <label>Режим просмотра</label>
+    <select id="viewModeSelect" onchange="changeViewMode()">
+      <option value="card">Карточный режим</option>
+      <option value="table">Табличный режим</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Выбранная переговорная</label>
+    <select id="activeRoomSelect" onchange="changeActiveRoom()"></select>
+  </div>
+
+  <button class="secondary" onclick="prevRoom()">Предыдущая</button>
+  <button class="secondary" onclick="nextRoom()">Следующая</button>
+</div>
+
+<div class="actions">
+  <button onclick="window.print()">Сохранить / печать в PDF</button>
+  <button class="secondary" onclick="openPhotoReportPage()">Фотоотчёт</button>
+  <button class="secondary" onclick="saveData()">Сохранить</button>
+  <button class="secondary" onclick="exportJson()">Экспорт JSON</button>
+  <button class="secondary" onclick="importBtn.click()">Импорт JSON</button>
+  <input type="file" id="importBtn" accept=".json" style="display:none" onchange="importJson(event)">
+  <button class="secondary" onclick="resetStatuses()">Очистить статусы</button>
+  <button class="danger" onclick="resetAll()">Очистить всё</button>
+</div>
+
+<div id="cardModeContainer">
+  <h2 id="cardModeTitle">Карточный режим</h2>
+  <div id="cardChecklist"></div>
+</div>
+
+<div id="tableModeContainer">
+  <div class="wrap">
+    <table id="mainTable">
+      <thead>
+        <tr id="head">
+          <th>Пункт проверки</th>
+          <th>Приоритет</th>
+          <th>Метод подтверждения</th>
+          <th class="col-impact">Влияние</th>
+          <th class="col-comment">Комментарий</th>
+        </tr>
+      </thead>
+      <tbody id="body"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="note">
+  Статусы: Да — выполнено; Нет — не выполнено; Н/П — не применимо; Замечание — требуется исправление; Блок — блокирующее замечание.
+</div>
+
+<h2>Реестр замечаний</h2>
+<div id="emptyIssues" class="empty">Замечания отсутствуют.</div>
+
+<div class="wrap">
+  <table id="issuesTable">
+    <thead>
+      <tr>
+        <th>№</th>
+        <th>Дата</th>
+        <th>Помещение</th>
+        <th>Этап СМР</th>
+        <th>Пункт проверки</th>
+        <th>Замечание</th>
+        <th>Приоритет</th>
+        <th>Ответственный</th>
+        <th>Срок устранения</th>
+        <th>Статус</th>
+        <th>Фото до</th>
+        <th>Фото после</th>
+        <th>Комментарий</th>
+      </tr>
+    </thead>
+    <tbody id="issuesBody"></tbody>
+  </table>
+</div>
+
+<div class="sign">
+  <div>AV PM / подпись / ФИО</div>
+  <div>Строительный PM / подпись / ФИО</div>
+  <div>AV-подрядчик / подпись / ФИО</div>
+</div>
+
+<div id="issueModal" class="modalBox hidden">
+  <div class="modal">
+    <h2>Замечание по пункту проверки</h2>
+
+    <div class="meta" id="modalMeta"></div>
+
+    <div class="req">
+      Для статусов «Нет», «Замечание» и «Блок» поле «Замечание» обязательно.
+      Для «Блок» и «Замечание» рекомендуется указать ответственного и срок устранения.
+    </div>
+
+    <div class="modalGrid">
+      <div class="modalField full">
+        <label>Замечание / причина неприменимости</label>
+        <textarea id="issueText" placeholder="Опишите, что именно не соответствует"></textarea>
+      </div>
+
+      <div class="modalField">
+        <label>Ответственный</label>
+        <input id="issueResponsible" placeholder="Подрядчик / ФИО / организация">
+      </div>
+
+      <div class="modalField">
+        <label>Срок устранения</label>
+        <input type="date" id="issueDueDate">
+      </div>
+
+      <div class="modalField">
+        <label>Фото до</label>
+        <input id="issuePhotoBefore" placeholder="Ссылка на фото до">
+      </div>
+
+      <div class="modalField">
+        <label>Фото после</label>
+        <input id="issuePhotoAfter" placeholder="Ссылка на фото после">
+      </div>
+
+      <div class="modalField full">
+        <label>Комментарий</label>
+        <textarea id="issueComment" placeholder="Дополнительный комментарий"></textarea>
+      </div>
+    </div>
+
+    <div class="modalActions">
+      <button class="secondary" onclick="closeIssueModal()">Отмена</button>
+      <button onclick="saveIssueFromModal()">Сохранить замечание</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = "av_vks_smr_checklist_final_v1";
+const SNAPSHOT_KEY = "av_vks_smr_checklist_final_snapshots_v1";
+
+let roomCount = 14;
+let activeRoom = 1;
+let viewMode = "card";
+
+const STATUSES = ["", "Да", "Нет", "Н/П", "Замечание", "Блок"];
+const ISSUE_STATUSES = ["Нет", "Н/П", "Замечание", "Блок"];
+const PRIORITIES = ["Блокер", "Крит", "Умеренный", "Незначительный", "Н/П"];
+
+let issues = {};
+let currentIssueKey = null;
+let flatRows = [];
+
+const checklist = [
+  {
+    section: "1. Перегородки и усиления",
+    rows: [
+      [
+        "Стена размещения дисплея определена и соответствует проекту",
+        "Блокер",
+        "Сверка с проектом / УТЗ, визуальный осмотр",
+        "Ошибка приведёт к невозможности корректного размещения дисплея и AV-компоновки",
+        "Проверить до зашивки стен и до начала чистовой отделки"
+      ],
+      [
+        "Усиление стены под дисплей выполнено, соответствует проекту по размеру, толщине, высоте и расположению",
+        "Блокер",
+        "Фото скрытых работ + акт скрытых работ + замер / сверка с проектом",
+        "Без корректного усиления невозможен безопасный монтаж дисплея",
+        "Ориентир: 1500×1500 мм, ≥12,5 мм, нижний край 700 мм, если не указано иное"
+      ],
+      [
+        "Фотофиксация усиления до зашивки выполнена и передана AV PM",
+        "Блокер",
+        "Проверка фотоархива / ссылки на фото",
+        "Нельзя подтвердить скрытые работы после закрытия стены",
+        "Фото общим планом и крупно, желательно с рулеткой / отметками"
+      ],
+      [
+        "Центральные оси помещения, дисплея и стола определены и соответствуют проекту",
+        "Крит",
+        "Визуальная проверка разметки, замер, сверка с проектом",
+        "Ошибка осей повлияет на положение дисплея, стола, камеры и участников",
+        "Ось стола финально проверяется на этапе мебели"
+      ],
+      [
+        "В зоне монтажа дисплея отсутствуют строительные ограничения",
+        "Крит",
+        "Визуальный осмотр зоны ТВ, фотофиксация",
+        "Колонны, ниши, инженерные элементы или декор могут помешать монтажу и обслуживанию",
+        "Проверить свободную плоскость стены и доступность зоны"
+      ]
+    ]
+  },
+
+  {
+    section: "2. Закладные и кабельные трассы",
+    rows: [
+      [
+        "Закладные между ТВ-зоной и напольными лючками / громметами под столом выполнены согласно проекту",
+        "Блокер",
+        "Фото скрытых работ + исполнительная схема + проверка проходимости",
+        "Без трасс невозможно подключение стола / лючков к зоне ТВ без переделок",
+        "Объединяет ближайший лючок, дальний лючок и трассы между лючками. Ориентир: d32 мм"
+      ],
+      [
+        "Закладная между ТВ-зоной и потолочной зоной выполнена согласно проекту",
+        "Блокер",
+        "Фото скрытых работ + исполнительная схема + проверка проходимости",
+        "Невозможно подключить потолочные AV-устройства к ТВ-зоне",
+        "Для потолочных микрофонов, камер, акустики при наличии"
+      ],
+      [
+        "Закладная для Whiteboard Camera / Скрайб выполнена и расположена согласно проектным привязкам",
+        "Крит",
+        "Фото скрытых работ + исполнительная схема + замер / проверка вывода",
+        "Ошибка трассы или положения ухудшит работу whiteboard-сценария",
+        "Ориентир: d25 мм, высота 2200 мм, отступ ≥800 мм, если предусмотрено УТЗ"
+      ],
+      [
+        "Закладная для планшета бронирования выполнена и выведена согласно проектным привязкам",
+        "Блокер",
+        "Фото скрытых работ + исполнительная схема + замер + проверка проходимости",
+        "Без закладной невозможно скрыто подключить планшет",
+        "Ориентир: d25 мм, вывод 1440 мм, если не указано иное"
+      ],
+      [
+        "Все закладные выведены в проектные точки / отдельные подрозетники и присутствуют на исполнительной схеме",
+        "Блокер",
+        "Визуальный осмотр, фото, исполнительная схема",
+        "Некорректные или неучтённые выводы блокируют монтаж AV и усложняют обслуживание",
+        "Проверить по каждому помещению"
+      ],
+      [
+        "Все скрытые закладные и трассы имеют фотофиксацию до закрытия конструкций",
+        "Блокер",
+        "Проверка фотоархива / ссылок на фото",
+        "Нельзя подтвердить скрытые работы после закрытия стен, пола или потолка",
+        "Фото по каждому помещению и каждой трассе"
+      ],
+      [
+        "Проходимость трасс проверена, концы трасс промаркированы и защищены от загрязнения",
+        "Блокер",
+        "Протяжка зонда / протяжки, визуальный осмотр, фото",
+        "Непроходимая или немаркированная трасса приведёт к вскрытию конструкций и ошибкам подключения",
+        "Объединяет проверку проходимости, маркировку и защиту концов"
+      ],
+      [
+        "Закладные не повреждены смежными подрядчиками",
+        "Крит",
+        "Визуальный осмотр, выборочная проверка проходимости, фото",
+        "Повреждения приведут к невозможности протяжки кабелей и переделкам",
+        "Проверять после смежных работ"
+      ]
+    ]
+  },
+
+  {
+    section: "3. Электромонтаж / зона дисплея, планшет, лючки",
+    rows: [
+      [
+        "Розеточный блок за ТВ установлен и соответствует УТЗ по составу силовых и информационных розеток",
+        "Блокер",
+        "Визуальный осмотр, фото, подсчёт розеток, сверка с УТЗ",
+        "Без корректного блока невозможно подключение дисплея и AV-оборудования",
+        "Ориентир: 5×220В и 2×RJ45, если не указано иное"
+      ],
+      [
+        "Розеточные модули за ТВ размещены согласно проектным высотам и привязкам относительно оси дисплея",
+        "Блокер",
+        "Замер рулеткой / лазерным дальномером, фото",
+        "Неверное размещение может привести к перекрытию розеток дисплеем или кронштейном",
+        "Ориентир: высота не ниже 800 мм и смещение 400 мм от оси, если применимо"
+      ],
+      [
+        "Розетки за ТВ не конфликтуют с будущим кронштейном, стеклом и зоной обслуживания",
+        "Крит",
+        "Сверка с габаритами кронштейна / шаблоном, визуальный осмотр",
+        "Конфликт приведёт к невозможности подключения или обслуживания",
+        "Проверить расположение относительно стекла, кронштейна и сервисной зоны"
+      ],
+      [
+        "Проектная отметка нижнего края дисплея проверена и соответствует УТЗ / проекту",
+        "Крит",
+        "Проверка проектной отметки, разметка на стене, замер",
+        "Неверная высота ухудшит эргономику просмотра и UX ВКС",
+        "Ориентир: нижний край дисплея 760 мм от пола / фальшпола, если не указано иное"
+      ],
+      [
+        "Питание и информационная розетка для планшета бронирования выполнены и доступны для обслуживания",
+        "Блокер",
+        "Визуальный осмотр, фото, сверка с проектом",
+        "Планшет невозможно подключить или обслуживать без переделок",
+        "Объединяет 220В, RJ45, доступность и расположение в ревизионной зоне"
+      ],
+      [
+        "Розетки планшета расположены под ревизионным люком / громметом, длина трассы соответствует требованиям",
+        "Крит",
+        "Визуальный осмотр, фото, замер / оценка трассы",
+        "Превышение длины или неверное расположение может вызвать проблемы подключения и обслуживания",
+        "Ориентир: суммарная длина трассы ≤1,9 м, если не указано иное"
+      ],
+      [
+        "Напольные лючки под столом установлены в проектном количестве и по проектным привязкам",
+        "Крит",
+        "Визуальный осмотр, замер, сверка с проектом / УТЗ",
+        "Ошибка расположения приведёт к конфликту со столом и ограничит подключение пользователей",
+        "Проверить до финальной установки мебели"
+      ],
+      [
+        "Закладные трубы доведены до напольных лючков и визуально доступны",
+        "Крит",
+        "Визуальный осмотр, фото",
+        "Отсутствие вывода в люк затруднит или заблокирует подключение",
+        "Проверить до закрытия пола / фальшпола"
+      ],
+      [
+        "Силовые и информационные розетки в напольных лючках выполнены согласно УТЗ",
+        "Крит",
+        "Визуальный подсчёт, фото, сверка с УТЗ",
+        "Нехватка питания или портов ограничит пользовательские подключения и AV-сценарии",
+        "Ориентир: 2×220В и 2×RJ45 в ближнем к ТВ люке, если не указано иное"
+      ],
+      [
+        "Все сетевые розетки имеют читаемую печатную маркировку",
+        "Крит",
+        "Визуальный осмотр маркировки, фото",
+        "Без маркировки усложняется эксплуатация, поддержка и диагностика",
+        "Маркировка должна совпадать с исполнительной документацией"
+      ]
+    ]
+  },
+  {
+    section: "4. СКС",
+    rows: [
+      [
+        "Все линии СКС промаркированы со стороны помещения и коммутационного шкафа",
+        "Блокер",
+        "Визуальный осмотр маркировки, фото помещения и шкафа",
+        "Без маркировки возможны ошибки подключения и длительная диагностика",
+        "Проверить все RJ45 в зоне ТВ, лючках, планшете, потолке"
+      ],
+      [
+        "Маркировка линий соответствует исполнительной документации / портовой ведомости",
+        "Блокер",
+        "Сверка маркировки с исполнительной схемой / портовой ведомостью",
+        "Несоответствие приведёт к неправильной коммутации",
+        "Проверить выборочно или по всем линиям помещения"
+      ],
+      [
+        "Получены протоколы тестирования, все линии успешно прошли проверку",
+        "Блокер",
+        "Проверка протоколов Fluke / аналогичного тестера",
+        "Неисправные линии приведут к сбоям ВКС и сетевого оборудования",
+        "Не принимать линии с FAIL / marginal без решения"
+      ],
+      [
+        "Порты в коммутационном шкафу подготовлены для подключения AV / ВКС",
+        "Крит",
+        "Осмотр шкафа, сверка с портовой ведомостью / подтверждение IT",
+        "Отсутствие портов задержит пусконаладку AV",
+        "Уточнить VLAN / коммутацию для ВКС при необходимости"
+      ],
+      [
+        "Выполнена фотофиксация патч-панелей и маркировки",
+        "Умеренный",
+        "Фото патч-панелей и маркировки",
+        "Упрощает удалённую проверку и дальнейшее сопровождение",
+        "Фото хранить по шкафу и помещению"
+      ]
+    ]
+  },
+
+  {
+    section: "5. Потолки",
+    rows: [
+      [
+        "Выводы AV-коммуникаций в потолочной зоне выполнены согласно проекту",
+        "Блокер",
+        "Визуальный осмотр, фото до закрытия потолка, сверка с проектом",
+        "Без выводов невозможен монтаж потолочных AV-устройств",
+        "Общий контроль потолочных AV-выводов"
+      ],
+      [
+        "Выводы под потолочные микрофоны, динамики и камеры выполнены согласно проекту",
+        "Блокер",
+        "Фотофиксация, сверка с проектом",
+        "Отсутствие выводов сорвёт монтаж потолочных устройств и качество ВКС",
+        "Если устройство не предусмотрено — Н/П"
+      ],
+      [
+        "Потолочные выводы промаркированы и соответствуют исполнительной схеме",
+        "Блокер",
+        "Визуальный осмотр маркировки, фото, сверка с исполнительной схемой",
+        "Ошибки подключения и увеличение сроков AV-монтажа",
+        "Маркировка должна совпадать с исполнительной схемой"
+      ],
+      [
+        "Фотофиксация потолочной зоны до закрытия выполнена и передана AV PM",
+        "Блокер",
+        "Проверка фотоархива / ссылок на фото",
+        "Нельзя подтвердить скрытые работы после закрытия потолка",
+        "Объединяет фотофиксацию и передачу AV PM"
+      ],
+      [
+        "Ревизионные панели / громметы для обслуживания планшета бронирования установлены, если предусмотрены",
+        "Крит",
+        "Визуальный осмотр, фото, сверка с проектом",
+        "Без ревизионного доступа усложняется обслуживание планшета",
+        "Применяется, если питание / RJ45 планшета выведены через потолок"
+      ]
+    ]
+  },
+
+  {
+    section: "6. Освещение",
+    rows: [
+      [
+        "Осветительное оборудование установлено, работает и соответствует проектной схеме",
+        "Блокер",
+        "Визуальная проверка включения, фото / видео, сверка с планом",
+        "Без корректного света невозможна настройка и эксплуатация ВКС",
+        "Объединяет наличие, работоспособность и базовое соответствие плану"
+      ],
+      [
+        "Светильники расположены симметрично относительно помещения, ТВ и мебельных решений",
+        "Крит",
+        "Визуальный осмотр, сверка с планом потолка",
+        "Несимметричное освещение ухудшает UX и визуальное восприятие кадра",
+        "Особенно важно для переговорных со столом по оси ТВ"
+      ],
+      [
+        "Освещение не попадает в поле зрения камеры, не создаёт засветку дисплея и контровой свет участникам",
+        "Блокер",
+        "Проверка с позиции камеры и посадочных мест, фото / видео",
+        "Засветка и контровой свет ухудшат качество видеосвязи",
+        "Объединяет поле зрения камеры, засветку дисплея и контровой свет"
+      ],
+      [
+        "Перед камерой отсутствуют подвесные элементы и объекты, перекрывающие обзор",
+        "Крит",
+        "Визуальный осмотр линии обзора камеры",
+        "Подвесы могут попасть в кадр или перекрыть обзор",
+        "Проверить декоративные светильники, датчики, подвесы, навигацию"
+      ]
+    ]
+  },
+
+  {
+    section: "7. Отделочные работы",
+    rows: [
+      [
+        "Мокрые процессы, покраска и монтаж напольных покрытий завершены",
+        "Блокер",
+        "Визуальный осмотр, фото, подтверждение генподрядчика",
+        "Влага, пыль и незавершённая отделка могут повредить AV-оборудование",
+        "Объединяет мокрые процессы, покраску и полы"
+      ],
+      [
+        "Стены, пол, потолок, двери, окна и фальшпол выполнены согласно проекту и без критичных дефектов",
+        "Крит",
+        "Визуальный осмотр, сверка с проектом",
+        "Отклонения влияют на размещение AV-оборудования и финальную настройку ВКС",
+        "Объединяет стены, пол, потолок, двери, окна, фальшпол"
+      ],
+      [
+        "Свободная зона вокруг ТВ сохранена, доступ к обслуживанию дисплея не ограничен мебелью или отделкой",
+        "Блокер",
+        "Визуальный осмотр, фото зоны ТВ",
+        "Ограничение доступа сорвёт монтаж и обслуживание дисплея",
+        "Объединяет свободную зону и отсутствие мебели в зоне обслуживания ТВ"
+      ],
+      [
+        "Над ТВ и столом отсутствуют декоративные элементы, растения и иные объекты, мешающие AV / ВКС",
+        "Крит",
+        "Визуальный осмотр, фото",
+        "Объекты могут мешать обзору, обслуживанию, микрофонам или создавать риск повреждения оборудования",
+        "Объединяет декор над ТВ, растения над ТВ и над столом"
+      ],
+      [
+        "Акустические шторы / акустические элементы установлены согласно проекту, если предусмотрены",
+        "Крит",
+        "Визуальный осмотр, сверка с проектом",
+        "Отсутствие акустических решений ухудшит качество речи и комфорт ВКС",
+        "Если не предусмотрены — Н/П"
+      ]
+    ]
+  },
+
+  {
+    section: "8. Планшет бронирования",
+    rows: [
+      [
+        "Место установки планшета соответствует проекту / УТЗ и расположено со стороны дверной ручки",
+        "Блокер",
+        "Сверка с проектом, визуальный осмотр, замер",
+        "Ошибка размещения нарушит пользовательский сценарий и потребует переноса",
+        "Объединяет место установки и расположение со стороны ручки"
+      ],
+      [
+        "Планшет устанавливается на чистовую / окрашенную стену, внешний вид зоны соответствует требованиям",
+        "Незначительный",
+        "Визуальный осмотр",
+        "Влияет на внешний вид и качество финальной установки",
+        "Проверять после чистовой отделки"
+      ],
+      [
+        "Сервисный доступ к подключению планшета сохранён через ревизионную панель / громмет",
+        "Крит",
+        "Проверка доступа к ревизионной зоне, фото",
+        "Затруднённое обслуживание при отказе устройства",
+        "Объединяет сервисный доступ, ревизионную панель и громмет"
+      ],
+      [
+        "Розетки питания и RJ45 для планшета расположены в проектной ревизионной зоне",
+        "Блокер",
+        "Визуальный осмотр, фото, сверка с проектом",
+        "Некорректное расположение блокирует подключение планшета",
+        "Объединяет расположение розеток под ревизионным люком / громметом"
+      ],
+      [
+        "Кабели планшета проложены в закладной трубе, длина трассы соответствует УТЗ",
+        "Блокер",
+        "Визуальный осмотр концов кабелей, фото, замер / оценка трассы",
+        "Без кабелей или при превышении длины невозможно корректное подключение",
+        "Ориентир: USB-C / RJ45 и длина трассы ≤1,9 м, если указано"
+      ],
+      [
+        "В зоне планшета отсутствуют датчики, считыватели, выключатели и навигация, мешающие монтажу и обзору",
+        "Блокер",
+        "Замер рулеткой, визуальный осмотр, фото",
+        "Конфликт устройств ухудшит UX, монтаж и эксплуатацию",
+        "Ориентир: отсутствие датчиков, считывателей и выключателей ближе 500 мм"
+      ]
+    ]
+  },
+
+  {
+    section: "9. Мебель / стол и лючки",
+    rows: [
+      [
+        "Мебельные решения в зоне ТВ и стол переговоров установлены согласно проекту",
+        "Блокер",
+        "Визуальный осмотр, сверка с планом мебели, замер",
+        "Неверное положение мебели нарушит геометрию ВКС",
+        "Объединяет мебель в зоне ТВ и установку стола"
+      ],
+      [
+        "Ось стола, дисплея и ТВ-тумбы совпадает с проектной осью симметрии",
+        "Блокер",
+        "Замер осей, лазер / рулетка, фото",
+        "Смещение ухудшит обзор дисплея и кадрирование участников",
+        "Проверить после финальной расстановки мебели"
+      ],
+      [
+        "Посадочные места соответствуют УТЗ по расположению, расстояниям, ширине и глубине",
+        "Блокер",
+        "Визуальный осмотр, замер рулеткой, сверка с УТЗ",
+        "Нарушение посадки ухудшит эргономику, обзор и качество кадра",
+        "Объединяет расстояние до ближайшего места, отсутствие мест между ТВ и столом, ширину и глубину"
+      ],
+      [
+        "Интерфейсные лючки встроены, расположены согласно проекту и доступны для эксплуатации",
+        "Блокер",
+        "Визуальный осмотр, сверка с проектом, функциональная проверка",
+        "Без корректных лючков невозможно штатное подключение пользователей",
+        "Объединяет наличие, расположение, открывание и доступ к обслуживанию"
+      ],
+      [
+        "Связка напольного люка и настольного лючка выполнена согласно стандарту",
+        "Крит",
+        "Замер рулеткой, фото",
+        "Влияет на удобство эксплуатации, эстетику и соответствие стандарту",
+        "Ориентир: край напольного люка в радиусе ≤10 см от рукава настольного лючка"
+      ],
+      [
+        "На мебели отсутствуют дефекты, влияющие на AV-монтаж и эксплуатацию",
+        "Умеренный",
+        "Визуальный осмотр, фото",
+        "Дефекты влияют на внешний вид, UX и возможность аккуратного монтажа",
+        "Фиксировать только дефекты, влияющие на AV / эксплуатацию"
+      ]
+    ]
+  },
+
+  {
+    section: "10. Готовность к передаче AV-подрядчику",
+    rows: [
+      [
+        "Все строительные, отделочные и мебельные работы в помещении завершены",
+        "Блокер",
+        "Визуальный осмотр, подтверждение генподрядчика, фото",
+        "Незавершённые работы создают риск повреждения AV-оборудования",
+        "Объединяет завершение СМР, отделки и мебели"
+      ],
+      [
+        "Подано постоянное электропитание, временное питание не используется",
+        "Блокер",
+        "Проверка питания, подтверждение электриков",
+        "Невозможно выполнить ПНР и тестирование AV-систем",
+        "Временное питание не считать готовностью"
+      ],
+      [
+        "СКС введена в эксплуатацию, линии промаркированы и протестированы",
+        "Блокер",
+        "Протоколы тестирования, подтверждение IT / СКС-подрядчика",
+        "Без СКС невозможна полноценная настройка ВКС и сетевых устройств",
+        "Объединяет ввод СКС, маркировку и тестирование"
+      ],
+      [
+        "Получен комплект исполнительной документации по помещению",
+        "Блокер",
+        "Проверка комплекта документов",
+        "Без документации усложняется монтаж, диагностика и эксплуатация",
+        "Исполнительные схемы, акты скрытых работ, протоколы тестирования"
+      ],
+      [
+        "Получен фотоархив скрытых работ по помещению",
+        "Блокер",
+        "Проверка фотоархива / ссылок на фото",
+        "Отсутствие фото создаёт риск споров и необходимости вскрытия",
+        "Усиления, закладные, потолки, трассы"
+      ],
+      [
+        "Помещение обеспылено и готово к заходу AV-подрядчика",
+        "Блокер",
+        "Визуальный осмотр, фото",
+        "Пыль может повредить оборудование и ухудшить качество монтажа",
+        "Перед заходом AV-подрядчика обязательная уборка"
+      ],
+      [
+        "Помещение формально передано AV-подрядчику",
+        "Блокер",
+        "Акт передачи помещения / запись в журнале работ",
+        "Фиксирует старт ответственности AV-подрядчика",
+        "После передачи новые повреждения фиксировать отдельно"
+      ]
+    ]
+  }
+];
+function todayISO() {
+  var d = new Date();
+  var yyyy = d.getFullYear();
+  var mm = String(d.getMonth() + 1).padStart(2, "0");
+  var dd = String(d.getDate()).padStart(2, "0");
+  return yyyy + "-" + mm + "-" + dd;
+}
+
+function safeText(value) {
+  return value === undefined || value === null ? "" : String(value);
+}
+
+function escapeHtml(value) {
+  return safeText(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function issueKey(rowId, roomNumber) {
+  return rowId + "_" + roomNumber;
+}
+
+function roomName(roomNumber) {
+  var input = document.getElementById("roomName_" + roomNumber);
+  return input && input.value.trim()
+    ? input.value.trim()
+    : "Переговорная " + roomNumber;
+}
+
+function priorityClass(priority) {
+  if (priority === "Блокер") return "p-blocker";
+  if (priority === "Крит") return "p-crit";
+  if (priority === "Умеренный") return "p-moderate";
+  if (priority === "Незначительный") return "p-minor";
+  if (priority === "Н/П") return "p-na";
+  return "";
+}
+
+function prioritySelectClass(priority) {
+  if (priority === "Блокер") return "blocker";
+  if (priority === "Крит") return "crit";
+  if (priority === "Умеренный") return "moderate";
+  if (priority === "Незначительный") return "minor";
+  if (priority === "Н/П") return "na";
+  return "";
+}
+
+function statusClass(status) {
+  if (status === "Да") return "s-yes";
+  if (status === "Нет") return "s-no";
+  if (status === "Н/П") return "s-na";
+  if (status === "Замечание") return "s-issue";
+  if (status === "Блок") return "s-block";
+  return "";
+}
+
+function limitedCellText(text) {
+  var span = document.createElement("span");
+  span.className = "cell-limit";
+  span.textContent = safeText(text);
+  span.title = safeText(text);
+  return span;
+}
+
+function buildFlatRows() {
+  flatRows = [];
+  var id = 1;
+
+  checklist.forEach(function(section) {
+    section.rows.forEach(function(row) {
+      flatRows.push({
+        id: id++,
+        stage: section.section,
+        item: row[0],
+        priority: row[1],
+        method: row[2],
+        impact: row[3],
+        comment: row[4]
+      });
+    });
+  });
+}
+
+function findRowData(sectionName, itemName) {
+  for (var i = 0; i < flatRows.length; i++) {
+    if (flatRows[i].stage === sectionName && flatRows[i].item === itemName) {
+      return flatRows[i];
+    }
+  }
+  return null;
+}
+
+function clearRoomHeaders() {
+  var head = document.getElementById("head");
+  var existing = head.querySelectorAll("th.room-header");
+
+  existing.forEach(function(th) {
+    th.parentNode.removeChild(th);
+  });
+}
+
+function renderRoomNames() {
+  var container = document.getElementById("rooms");
+  container.innerHTML = "";
+
+  for (var i = 1; i <= roomCount; i++) {
+    var div = document.createElement("div");
+    div.className = "room-name";
+
+    var label = document.createElement("label");
+    label.textContent = "Переговорная " + i;
+
+    var input = document.createElement("input");
+    input.id = "roomName_" + i;
+    input.placeholder = "Переговорная " + i;
+
+    input.addEventListener("input", function() {
+      updateRoomHeaders();
+      renderActiveRoomSelect();
+      renderCardChecklist();
+      renderIssues();
+      saveData(false);
+    });
+
+    div.appendChild(label);
+    div.appendChild(input);
+    container.appendChild(div);
+  }
+}
+
+function renderActiveRoomSelect() {
+  var select = document.getElementById("activeRoomSelect");
+  if (!select) return;
+
+  select.innerHTML = "";
+
+  for (var i = 1; i <= roomCount; i++) {
+    var option = document.createElement("option");
+    option.value = i;
+    option.textContent = roomName(i);
+    select.appendChild(option);
+  }
+
+  if (activeRoom > roomCount) activeRoom = roomCount;
+  if (activeRoom < 1) activeRoom = 1;
+
+  select.value = activeRoom;
+}
+
+function renderHeaders() {
+  clearRoomHeaders();
+
+  var head = document.getElementById("head");
+
+  for (var i = 1; i <= roomCount; i++) {
+    var th = document.createElement("th");
+    th.id = "roomHeader_" + i;
+    th.className = "room-header";
+    th.textContent = roomName(i);
+    head.appendChild(th);
+  }
+}
+
+function updateRoomHeaders() {
+  for (var i = 1; i <= roomCount; i++) {
+    var th = document.getElementById("roomHeader_" + i);
+    if (th) th.textContent = roomName(i);
+  }
+}
+
+function createPrioritySelect(rowData, optionalClassName) {
+  var select = document.createElement("select");
+  select.className = "priority-select " + prioritySelectClass(rowData.priority);
+
+  if (optionalClassName) {
+    select.className += " " + optionalClassName;
+  }
+
+  select.id = "priority_" + rowData.id;
+
+  PRIORITIES.forEach(function(priority) {
+    var option = document.createElement("option");
+    option.value = priority;
+    option.textContent = priority;
+    select.appendChild(option);
+  });
+
+  select.value = rowData.priority;
+
+  select.addEventListener("change", function() {
+    rowData.priority = select.value;
+    select.className = "priority-select " + prioritySelectClass(select.value);
+
+    Object.keys(issues).forEach(function(key) {
+      if (key.indexOf(rowData.id + "_") === 0) {
+        issues[key].priority = select.value;
+      }
+    });
+
+    syncPriorityControls(rowData.id, select.value);
+    renderIssues();
+    saveData(false);
+  });
+
+  return select;
+}
+
+function syncPriorityControls(rowId, value) {
+  var selects = document.querySelectorAll("select[id='priority_" + rowId + "']");
+
+  selects.forEach(function(sel) {
+    sel.value = value;
+    sel.className = "priority-select " + prioritySelectClass(value);
+
+    var td = sel.closest("td");
+    if (td && td.className.indexOf("priority") !== -1) {
+      td.className = "priority " + priorityClass(value);
+    }
+  });
+}
+
+function createStatusSelect(rowData, roomNumber, containerElement, mode) {
+  var select = document.createElement("select");
+  select.id = "status_" + rowData.id + "_" + roomNumber + "_" + mode;
+
+  STATUSES.forEach(function(status) {
+    var option = document.createElement("option");
+    option.value = status;
+    option.textContent = status;
+    select.appendChild(option);
+  });
+
+  var storedStatus = getStatusValue(rowData.id, roomNumber);
+  select.value = storedStatus;
+
+  if (storedStatus) {
+    containerElement.className += " " + statusClass(storedStatus);
+  }
+
+  select.addEventListener("change", function() {
+    handleStatusChange(rowData, roomNumber, select.value);
+  });
+
+  return select;
+}
+
+function getStatusValue(rowId, roomNumber) {
+  var tableSelect = document.getElementById("status_" + rowId + "_" + roomNumber + "_table");
+  var cardSelect = document.getElementById("status_" + rowId + "_" + roomNumber + "_card");
+
+  if (tableSelect && tableSelect.value) return tableSelect.value;
+  if (cardSelect && cardSelect.value) return cardSelect.value;
+
+  var key = issueKey(rowId, roomNumber);
+  if (issues[key]) return issues[key].status || "";
+
+  return "";
+}
+
+function createCommentButton(rowData, roomNumber, mode) {
+  var btn = document.createElement("button");
+  btn.className = "small";
+  btn.textContent = "Комм.";
+  btn.id = "commentBtn_" + rowData.id + "_" + roomNumber + "_" + mode;
+
+  var currentStatus = getStatusValue(rowData.id, roomNumber);
+  btn.style.display = ISSUE_STATUSES.indexOf(currentStatus) !== -1 ? "block" : "none";
+
+  btn.onclick = function() {
+    openIssueModal(rowData, roomNumber);
+  };
+
+  return btn;
+}
+
+function renderChecklistTable() {
+  var tbody = document.getElementById("body");
+  tbody.innerHTML = "";
+
+  checklist.forEach(function(section) {
+    var sectionRow = document.createElement("tr");
+    sectionRow.className = "section";
+
+    var sectionCell = document.createElement("td");
+    sectionCell.colSpan = 5 + roomCount;
+    sectionCell.textContent = section.section;
+
+    sectionRow.appendChild(sectionCell);
+    tbody.appendChild(sectionRow);
+
+    section.rows.forEach(function(row) {
+      var rowData = findRowData(section.section, row[0]);
+      if (!rowData) return;
+
+      var tr = document.createElement("tr");
+
+      var tdItem = document.createElement("td");
+      tdItem.className = "item";
+      tdItem.appendChild(limitedCellText(rowData.item));
+      tr.appendChild(tdItem);
+
+      var tdPriority = document.createElement("td");
+      tdPriority.className = "priority " + priorityClass(rowData.priority);
+      tdPriority.appendChild(createPrioritySelect(rowData));
+      tr.appendChild(tdPriority);
+
+      var tdMethod = document.createElement("td");
+      tdMethod.className = "method";
+      tdMethod.appendChild(limitedCellText(rowData.method));
+      tr.appendChild(tdMethod);
+
+      var tdImpact = document.createElement("td");
+      tdImpact.className = "impact";
+      tdImpact.appendChild(limitedCellText(rowData.impact));
+      tr.appendChild(tdImpact);
+
+      var tdComment = document.createElement("td");
+      tdComment.className = "comment";
+      tdComment.appendChild(limitedCellText(rowData.comment));
+      tr.appendChild(tdComment);
+
+      for (var room = 1; room <= roomCount; room++) {
+        var tdRoom = document.createElement("td");
+        tdRoom.className = "room";
+
+        var select = createStatusSelect(rowData, room, tdRoom, "table");
+        var btn = createCommentButton(rowData, room, "table");
+
+        tdRoom.appendChild(select);
+        tdRoom.appendChild(btn);
+        tr.appendChild(tdRoom);
+      }
+
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+function renderCardChecklist() {
+  var container = document.getElementById("cardChecklist");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  var title = document.getElementById("cardModeTitle");
+  if (title) {
+    title.textContent = "Карточный режим — " + roomName(activeRoom);
+  }
+
+  checklist.forEach(function(section) {
+    var sectionDiv = document.createElement("div");
+    sectionDiv.className = "card-section";
+
+    var sectionTitle = document.createElement("div");
+    sectionTitle.className = "card-section-title";
+    sectionTitle.textContent = section.section;
+    sectionDiv.appendChild(sectionTitle);
+
+    section.rows.forEach(function(row) {
+      var rowData = findRowData(section.section, row[0]);
+      if (!rowData) return;
+
+      var itemDiv = document.createElement("div");
+      itemDiv.className = "card-item";
+
+      var mainRow = document.createElement("div");
+      mainRow.className = "card-row-main";
+
+      var point = document.createElement("div");
+      point.className = "card-point";
+      point.textContent = rowData.item;
+
+      var priorityCell = document.createElement("div");
+      priorityCell.className = "card-priority-cell";
+      priorityCell.appendChild(createPrioritySelect(rowData, "card-priority-select"));
+
+      var statusCell = document.createElement("div");
+      statusCell.className = "card-status-cell";
+
+      var statusSelect = createStatusSelect(rowData, activeRoom, statusCell, "card");
+      var commentBtn = createCommentButton(rowData, activeRoom, "card");
+      commentBtn.className = "small card-comment-btn";
+
+      statusCell.appendChild(statusSelect);
+      statusCell.appendChild(commentBtn);
+
+      mainRow.appendChild(point);
+      mainRow.appendChild(priorityCell);
+      mainRow.appendChild(statusCell);
+
+      itemDiv.appendChild(mainRow);
+
+      var meta = document.createElement("div");
+      meta.className = "card-meta";
+
+      var method = document.createElement("div");
+      method.className = "card-meta-block";
+      method.innerHTML = "<b>Метод:</b><br>" + escapeHtml(rowData.method);
+
+      var impact = document.createElement("div");
+      impact.className = "card-meta-block impact";
+      impact.innerHTML = "<b>Влияние:</b><br>" + escapeHtml(rowData.impact);
+
+      var comment = document.createElement("div");
+      comment.className = "card-meta-block comment";
+      comment.innerHTML = "<b>Комментарий:</b><br>" + escapeHtml(rowData.comment);
+
+      meta.appendChild(method);
+      meta.appendChild(impact);
+      meta.appendChild(comment);
+
+      itemDiv.appendChild(meta);
+      sectionDiv.appendChild(itemDiv);
+    });
+
+    container.appendChild(sectionDiv);
+  });
+}
+function syncStatusControls(rowId, roomNumber, value) {
+  var tableSelect = document.getElementById("status_" + rowId + "_" + roomNumber + "_table");
+  var cardSelect = document.getElementById("status_" + rowId + "_" + roomNumber + "_card");
+
+  if (tableSelect) {
+    tableSelect.value = value;
+    var td = tableSelect.closest("td");
+    if (td) td.className = "room " + statusClass(value);
+  }
+
+  if (cardSelect) {
+    cardSelect.value = value;
+    var div = cardSelect.parentNode;
+    if (div) div.className = "card-status-cell " + statusClass(value);
+  }
+
+  var tableBtn = document.getElementById("commentBtn_" + rowId + "_" + roomNumber + "_table");
+  var cardBtn = document.getElementById("commentBtn_" + rowId + "_" + roomNumber + "_card");
+
+  var display = ISSUE_STATUSES.indexOf(value) !== -1 ? "block" : "none";
+
+  if (tableBtn) tableBtn.style.display = display;
+  if (cardBtn) cardBtn.style.display = display;
+}
+
+function handleStatusChange(rowData, roomNumber, status) {
+  var key = issueKey(rowData.id, roomNumber);
+
+  if (ISSUE_STATUSES.indexOf(status) !== -1) {
+    if (!issues[key]) {
+      issues[key] = {
+        number: rowData.id,
+        date: document.getElementById("checkDate").value || todayISO(),
+        room: roomName(roomNumber),
+        stage: rowData.stage,
+        item: rowData.item,
+        issue: "",
+        priority: rowData.priority,
+        responsible: "",
+        dueDate: "",
+        status: status,
+        photoBefore: "",
+        photoAfter: "",
+        comment: ""
+      };
+    } else {
+      issues[key].status = status;
+      issues[key].date = document.getElementById("checkDate").value || todayISO();
+      issues[key].room = roomName(roomNumber);
+      issues[key].priority = rowData.priority;
+    }
+
+    syncStatusControls(rowData.id, roomNumber, status);
+    openIssueModal(rowData, roomNumber);
+  } else {
+    if (issues[key]) delete issues[key];
+    syncStatusControls(rowData.id, roomNumber, status);
+  }
+
+  renderIssues();
+  updateDashboard();
+  saveData(false);
+}
+
+function openIssueModal(rowData, roomNumber) {
+  var key = issueKey(rowData.id, roomNumber);
+  currentIssueKey = key;
+
+  var currentStatus = getStatusValue(rowData.id, roomNumber);
+
+  if (!issues[key]) {
+    issues[key] = {
+      number: rowData.id,
+      date: document.getElementById("checkDate").value || todayISO(),
+      room: roomName(roomNumber),
+      stage: rowData.stage,
+      item: rowData.item,
+      issue: "",
+      priority: rowData.priority,
+      responsible: "",
+      dueDate: "",
+      status: currentStatus,
+      photoBefore: "",
+      photoAfter: "",
+      comment: ""
+    };
+  }
+
+  var issue = issues[key];
+
+  document.getElementById("modalMeta").innerHTML =
+    "<b>Дата:</b> " + escapeHtml(issue.date) + "<br>" +
+    "<b>Помещение:</b> " + escapeHtml(issue.room) + "<br>" +
+    "<b>Этап СМР:</b> " + escapeHtml(issue.stage) + "<br>" +
+    "<b>Пункт:</b> " + escapeHtml(issue.item) + "<br>" +
+    "<b>Приоритет:</b> " + escapeHtml(issue.priority) + "<br>" +
+    "<b>Статус:</b> " + escapeHtml(issue.status);
+
+  document.getElementById("issueText").value = issue.issue || "";
+  document.getElementById("issueResponsible").value = issue.responsible || "";
+  document.getElementById("issueDueDate").value = issue.dueDate || "";
+  document.getElementById("issuePhotoBefore").value = issue.photoBefore || "";
+  document.getElementById("issuePhotoAfter").value = issue.photoAfter || "";
+  document.getElementById("issueComment").value = issue.comment || "";
+
+  document.getElementById("issueModal").classList.remove("hidden");
+}
+
+function closeIssueModal() {
+  document.getElementById("issueModal").classList.add("hidden");
+  currentIssueKey = null;
+}
+
+function saveIssueFromModal() {
+  if (!currentIssueKey || !issues[currentIssueKey]) return;
+
+  var issueText = document.getElementById("issueText").value.trim();
+  var status = issues[currentIssueKey].status;
+
+  if ((status === "Нет" || status === "Замечание" || status === "Блок") && !issueText) {
+    alert("Заполните поле «Замечание / причина неприменимости».");
+    return;
+  }
+
+  issues[currentIssueKey].issue = issueText;
+  issues[currentIssueKey].responsible = document.getElementById("issueResponsible").value.trim();
+  issues[currentIssueKey].dueDate = document.getElementById("issueDueDate").value;
+  issues[currentIssueKey].photoBefore = document.getElementById("issuePhotoBefore").value.trim();
+  issues[currentIssueKey].photoAfter = document.getElementById("issuePhotoAfter").value.trim();
+  issues[currentIssueKey].comment = document.getElementById("issueComment").value.trim();
+
+  renderIssues();
+  updateDashboard();
+  saveData(false);
+  closeIssueModal();
+}
+
+function renderIssues() {
+  var tbody = document.getElementById("issuesBody");
+  var empty = document.getElementById("emptyIssues");
+
+  tbody.innerHTML = "";
+
+  var list = Object.keys(issues).map(function(key) {
+    return issues[key];
+  });
+
+  list.sort(function(a, b) {
+    if (a.number !== b.number) return a.number - b.number;
+    return a.room.localeCompare(b.room, "ru");
+  });
+
+  empty.style.display = list.length ? "none" : "block";
+
+  list.forEach(function(issue, index) {
+    var tr = document.createElement("tr");
+
+    var cells = [
+      index + 1,
+      issue.date,
+      issue.room,
+      issue.stage,
+      issue.item,
+      issue.issue,
+      issue.priority,
+      issue.responsible,
+      issue.dueDate,
+      issue.status,
+      issue.photoBefore,
+      issue.photoAfter,
+      issue.comment
+    ];
+
+    cells.forEach(function(value) {
+      var td = document.createElement("td");
+      td.appendChild(limitedCellText(value));
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
+  });
+}
+
+function changeActiveRoom() {
+  var select = document.getElementById("activeRoomSelect");
+  activeRoom = Number(select.value) || 1;
+  renderCardChecklist();
+  saveData(false);
+}
+
+function prevRoom() {
+  if (activeRoom > 1) {
+    activeRoom--;
+    renderActiveRoomSelect();
+    renderCardChecklist();
+    saveData(false);
+  }
+}
+
+function nextRoom() {
+  if (activeRoom < roomCount) {
+    activeRoom++;
+    renderActiveRoomSelect();
+    renderCardChecklist();
+    saveData(false);
+  }
+}
+
+function changeViewMode() {
+  var select = document.getElementById("viewModeSelect");
+  viewMode = select.value || "card";
+
+  if (viewMode === "table") {
+    document.body.classList.add("table-mode");
+  } else {
+    document.body.classList.remove("table-mode");
+  }
+
+  saveData(false);
+}
+
+function toggleImpact() {
+  document.body.classList.toggle("hide-impact");
+  saveData(false);
+}
+
+function toggleComment() {
+  document.body.classList.toggle("hide-comment");
+  saveData(false);
+}
+
+function applyRoomCount() {
+  var currentData = collectData();
+
+  var input = document.getElementById("roomCountInput");
+  var value = Number(input.value);
+
+  if (!value || value < 1) value = 1;
+  if (value > 50) value = 50;
+
+  roomCount = value;
+  input.value = roomCount;
+
+  if (activeRoom > roomCount) activeRoom = roomCount;
+
+  currentData.view = currentData.view || {};
+  currentData.view.roomCount = roomCount;
+  currentData.view.activeRoom = activeRoom;
+
+  buildInterfaceForRoomCount();
+  applyData(currentData);
+
+  updateDashboard();
+  renderIssues();
+  saveData(false);
+}
+function updateDashboard() {
+  var total = 0;
+  var yes = 0;
+  var no = 0;
+  var na = 0;
+  var issueCount = 0;
+
+  for (var rowIndex = 0; rowIndex < flatRows.length; rowIndex++) {
+    var row = flatRows[rowIndex];
+
+    for (var room = 1; room <= roomCount; room++) {
+      var value = getStatusValue(row.id, room);
+
+      if (!value) continue;
+
+      total++;
+
+      if (value === "Да") yes++;
+      if (value === "Нет") no++;
+      if (value === "Н/П") na++;
+      if (value === "Замечание" || value === "Блок") issueCount++;
+    }
+  }
+
+  var applicable = total - na;
+  var ready = applicable > 0 ? Math.round((yes / applicable) * 100) : 0;
+
+  document.getElementById("mTotal").textContent = total;
+  document.getElementById("mYes").textContent = yes;
+  document.getElementById("mNo").textContent = no;
+  document.getElementById("mNa").textContent = na;
+  document.getElementById("mIssues").textContent = issueCount;
+  document.getElementById("mReady").textContent = ready + "%";
+}
+
+function collectData() {
+  var statuses = {};
+  var priorities = {};
+
+  var statusSelects = document.querySelectorAll("select[id^='status_']");
+  statusSelects.forEach(function(select) {
+    statuses[select.id] = select.value;
+  });
+
+  var prioritySelects = document.querySelectorAll("select[id^='priority_']");
+  prioritySelects.forEach(function(select) {
+    priorities[select.id] = select.value;
+  });
+
+  var roomNames = {};
+  var maxRoomsToSave = Math.max(roomCount, 50);
+
+  for (var i = 1; i <= maxRoomsToSave; i++) {
+    var input = document.getElementById("roomName_" + i);
+    roomNames["roomName_" + i] = input ? input.value : "";
+  }
+
+  return {
+    meta: {
+      checkDate: document.getElementById("checkDate").value,
+      city: document.getElementById("city").value,
+      office: document.getElementById("office").value,
+      floor: document.getElementById("floor").value
+    },
+    view: {
+      roomCount: roomCount,
+      activeRoom: activeRoom,
+      viewMode: viewMode,
+      hideImpact: document.body.classList.contains("hide-impact"),
+      hideComment: document.body.classList.contains("hide-comment")
+    },
+    roomNames: roomNames,
+    statuses: statuses,
+    priorities: priorities,
+    issues: issues
+  };
+}
+
+function applyData(data) {
+  if (!data) return;
+
+  if (data.view) {
+    roomCount = Number(data.view.roomCount) || roomCount || 14;
+    activeRoom = Number(data.view.activeRoom) || activeRoom || 1;
+    viewMode = data.view.viewMode || viewMode || "card";
+
+    if (roomCount < 1) roomCount = 1;
+    if (roomCount > 50) roomCount = 50;
+    if (activeRoom < 1) activeRoom = 1;
+    if (activeRoom > roomCount) activeRoom = roomCount;
+
+    document.body.classList.toggle("hide-impact", !!data.view.hideImpact);
+    document.body.classList.toggle("hide-comment", !!data.view.hideComment);
+  }
+
+  var roomCountInput = document.getElementById("roomCountInput");
+  if (roomCountInput) roomCountInput.value = roomCount;
+
+  var viewModeSelect = document.getElementById("viewModeSelect");
+  if (viewModeSelect) viewModeSelect.value = viewMode;
+
+  if (viewMode === "table") {
+    document.body.classList.add("table-mode");
+  } else {
+    document.body.classList.remove("table-mode");
+  }
+
+  if (data.meta) {
+    document.getElementById("checkDate").value = data.meta.checkDate || todayISO();
+    document.getElementById("city").value = data.meta.city || "";
+    document.getElementById("office").value = data.meta.office || "";
+    document.getElementById("floor").value = data.meta.floor || "";
+  }
+
+  if (data.roomNames) {
+    for (var i = 1; i <= roomCount; i++) {
+      var input = document.getElementById("roomName_" + i);
+      if (input) input.value = data.roomNames["roomName_" + i] || "";
+    }
+  }
+
+  updateRoomHeaders();
+  renderActiveRoomSelect();
+
+  issues = data.issues || {};
+
+  if (data.priorities) {
+    Object.keys(data.priorities).forEach(function(id) {
+      var value = data.priorities[id];
+
+      var rowId = Number(id.replace("priority_", ""));
+      var rowData = null;
+
+      for (var i = 0; i < flatRows.length; i++) {
+        if (flatRows[i].id === rowId) {
+          rowData = flatRows[i];
+          break;
+        }
+      }
+
+      if (rowData) {
+        rowData.priority = value;
+        syncPriorityControls(rowData.id, value);
+      }
+    });
+  }
+
+  if (data.statuses) {
+    Object.keys(data.statuses).forEach(function(id) {
+      var value = data.statuses[id];
+
+      var parts = id.replace("status_", "").split("_");
+      var rowId = Number(parts[0]);
+      var roomNumber = Number(parts[1]);
+
+      if (!rowId || !roomNumber) return;
+
+      syncStatusControls(rowId, roomNumber, value);
+    });
+  }
+
+  renderCardChecklist();
+  renderIssues();
+  updateDashboard();
+}
+
+function saveData(showAlert) {
+  if (showAlert === undefined) showAlert = true;
+
+  var data = collectData();
+
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+    if (showAlert) {
+      alert("Данные сохранены в браузере.");
+    }
+  } catch (e) {
+    console.error(e);
+    if (showAlert) {
+      alert("Не удалось сохранить данные. Возможно, хранилище браузера переполнено или отключено.");
+    }
+  }
+}
+
+function loadData() {
+  var raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return false;
+
+  try {
+    var data = JSON.parse(raw);
+
+    if (data.view) {
+      roomCount = Number(data.view.roomCount) || 14;
+      activeRoom = Number(data.view.activeRoom) || 1;
+      viewMode = data.view.viewMode || "card";
+    }
+
+    buildInterfaceForRoomCount();
+    applyData(data);
+    return true;
+  } catch (e) {
+    console.error(e);
+    alert("Ошибка загрузки сохранённых данных: " + e.message);
+    return false;
+  }
+}
+
+function exportJson() {
+  var data = collectData();
+
+  var blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json"
+  });
+
+  var office = document.getElementById("office").value || "office";
+  var floor = document.getElementById("floor").value || "floor";
+  var date = document.getElementById("checkDate").value || todayISO();
+
+  var filename = ("AV_VKS_SMR_Checklist_" + office + "_" + floor + "_" + date + ".json")
+    .replace(/\s+/g, "_")
+    .replace(/[\\/:*?"<>|]/g, "_");
+
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+
+  URL.revokeObjectURL(a.href);
+}
+
+function importJson(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+
+  var reader = new FileReader();
+
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+
+      if (data.view) {
+        roomCount = Number(data.view.roomCount) || 14;
+        activeRoom = Number(data.view.activeRoom) || 1;
+        viewMode = data.view.viewMode || "card";
+      }
+
+      buildInterfaceForRoomCount();
+      applyData(data);
+      saveData(false);
+      alert("Данные импортированы.");
+    } catch (err) {
+      alert("Ошибка импорта JSON.");
+      console.error(err);
+    }
+  };
+
+  reader.readAsText(file);
+  event.target.value = "";
+}
+
+function resetStatuses() {
+  if (!confirm("Очистить все статусы и замечания?")) return;
+
+  var statusSelects = document.querySelectorAll("select[id^='status_']");
+  statusSelects.forEach(function(select) {
+    select.value = "";
+  });
+
+  issues = {};
+
+  buildInterfaceForRoomCount();
+  renderIssues();
+  updateDashboard();
+  saveData(false);
+}
+
+function resetAll() {
+  if (!confirm("Очистить все данные чек-листа, включая город, офис, этаж, помещения, статусы, приоритеты, вид и замечания?")) return;
+
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (e) {
+    console.error(e);
+  }
+
+  roomCount = 14;
+  activeRoom = 1;
+  viewMode = "card";
+  issues = {};
+
+  document.body.classList.remove("hide-impact");
+  document.body.classList.remove("hide-comment");
+  document.body.classList.remove("table-mode");
+
+  document.getElementById("checkDate").value = todayISO();
+  document.getElementById("city").value = "";
+  document.getElementById("office").value = "";
+  document.getElementById("floor").value = "";
+
+  buildFlatRows();
+  buildInterfaceForRoomCount();
+
+  var roomCountInput = document.getElementById("roomCountInput");
+  if (roomCountInput) roomCountInput.value = roomCount;
+
+  var viewModeSelect = document.getElementById("viewModeSelect");
+  if (viewModeSelect) viewModeSelect.value = viewMode;
+
+  renderIssues();
+  updateDashboard();
+  saveData(false);
+}
+
+function attachMetaAutosave() {
+  var ids = ["checkDate", "city", "office", "floor"];
+
+  ids.forEach(function(id) {
+    var el = document.getElementById(id);
+
+    el.addEventListener("input", function() {
+      Object.keys(issues).forEach(function(key) {
+        issues[key].date = document.getElementById("checkDate").value || todayISO();
+      });
+
+      renderIssues();
+      saveData(false);
+    });
+  });
+}
+
+function buildInterfaceForRoomCount() {
+  renderRoomNames();
+  renderActiveRoomSelect();
+  renderHeaders();
+  renderChecklistTable();
+  renderCardChecklist();
+}
+function getSnapshots() {
+  try {
+    var raw = localStorage.getItem(SNAPSHOT_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw) || [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+}
+
+function setSnapshots(snapshots) {
+  try {
+    localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(snapshots));
+  } catch (e) {
+    console.error(e);
+    alert("Не удалось сохранить версию. Возможно, хранилище браузера переполнено.");
+  }
+}
+
+function snapshotName() {
+  var city = document.getElementById("city").value || "Город";
+  var office = document.getElementById("office").value || "Офис";
+  var floor = document.getElementById("floor").value || "Этаж";
+  var date = document.getElementById("checkDate").value || todayISO();
+
+  var now = new Date();
+  var hh = String(now.getHours()).padStart(2, "0");
+  var mm = String(now.getMinutes()).padStart(2, "0");
+
+  return city + " / " + office + " / " + floor + " / " + date + " " + hh + ":" + mm;
+}
+
+function renderSnapshotList() {
+  var select = document.getElementById("snapshotList");
+  if (!select) return;
+
+  var snapshots = getSnapshots();
+
+  select.innerHTML = "";
+
+  if (!snapshots.length) {
+    var emptyOption = document.createElement("option");
+    emptyOption.value = "";
+    emptyOption.textContent = "Сохранённые версии отсутствуют";
+    select.appendChild(emptyOption);
+    return;
+  }
+
+  snapshots.forEach(function(snapshot) {
+    var option = document.createElement("option");
+    option.value = snapshot.id;
+    option.textContent = snapshot.name;
+    select.appendChild(option);
+  });
+}
+
+function saveSnapshot() {
+  var snapshots = getSnapshots();
+
+  var snapshot = {
+    id: "snapshot_" + Date.now(),
+    name: snapshotName(),
+    createdAt: new Date().toISOString(),
+    data: collectData()
+  };
+
+  snapshots.unshift(snapshot);
+
+  if (snapshots.length > 20) {
+    snapshots = snapshots.slice(0, 20);
+  }
+
+  setSnapshots(snapshots);
+  renderSnapshotList();
+
+  alert("Версия сохранена.");
+}
+
+function loadSnapshot() {
+  var select = document.getElementById("snapshotList");
+  if (!select || !select.value) {
+    alert("Выберите сохранённую версию.");
+    return;
+  }
+
+  var snapshots = getSnapshots();
+  var selected = null;
+
+  for (var i = 0; i < snapshots.length; i++) {
+    if (snapshots[i].id === select.value) {
+      selected = snapshots[i];
+      break;
+    }
+  }
+
+  if (!selected) {
+    alert("Версия не найдена.");
+    return;
+  }
+
+  if (!confirm("Загрузить выбранную версию? Текущее состояние будет заменено.")) {
+    return;
+  }
+
+  var data = selected.data;
+
+  if (data.view) {
+    roomCount = Number(data.view.roomCount) || 14;
+    activeRoom = Number(data.view.activeRoom) || 1;
+    viewMode = data.view.viewMode || "card";
+  }
+
+  buildInterfaceForRoomCount();
+  applyData(data);
+  saveData(false);
+
+  alert("Версия загружена.");
+}
+
+function deleteSnapshot() {
+  var select = document.getElementById("snapshotList");
+  if (!select || !select.value) {
+    alert("Выберите сохранённую версию.");
+    return;
+  }
+
+  if (!confirm("Удалить выбранную версию?")) {
+    return;
+  }
+
+  var snapshots = getSnapshots().filter(function(snapshot) {
+    return snapshot.id !== select.value;
+  });
+
+  setSnapshots(snapshots);
+  renderSnapshotList();
+}
+
+function openPhotoReportPage() {
+  saveData(false);
+  window.location.href = "/photo-report.html";
+}
+
+function init() {
+  document.getElementById("checkDate").value = todayISO();
+
+  buildFlatRows();
+
+  var loaded = loadData();
+
+  if (!loaded) {
+    buildInterfaceForRoomCount();
+    updateRoomHeaders();
+    updateDashboard();
+    renderIssues();
+  }
+
+  var roomCountInput = document.getElementById("roomCountInput");
+  if (roomCountInput) {
+    roomCountInput.value = roomCount;
+  }
+
+  var viewModeSelect = document.getElementById("viewModeSelect");
+  if (viewModeSelect) {
+    viewModeSelect.value = viewMode;
+  }
+
+  if (viewMode === "table") {
+    document.body.classList.add("table-mode");
+  } else {
+    document.body.classList.remove("table-mode");
+  }
+
+  renderActiveRoomSelect();
+  renderCardChecklist();
+  attachMetaAutosave();
+  renderSnapshotList();
+}
+
+init();
+</script>
+
+</body>
+</html>
+
