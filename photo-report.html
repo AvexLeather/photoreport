@@ -87,7 +87,9 @@ select {
 .field input,
 .field select,
 .photo-caption,
-.photo-note-input {
+.photo-note-input,
+.report-inline-input,
+.issues-edit-textarea {
   border: 1px solid #c9c9c9;
   border-radius: 4px;
   padding: 6px;
@@ -177,6 +179,10 @@ button.small {
   border-bottom: none;
 }
 
+.report-inline-input {
+  width: 100%;
+}
+
 .issues-block {
   border: 1px solid #111827;
   margin-bottom: 10px;
@@ -203,6 +209,13 @@ button.small {
 
 .issues-list li {
   margin-bottom: 4px;
+}
+
+.issues-edit-textarea {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  font-family: Arial, sans-serif;
 }
 
 .photo-section-title {
@@ -288,6 +301,14 @@ button.small {
   display: none !important;
 }
 
+.print-only {
+  display: none;
+}
+
+.screen-only {
+  display: block;
+}
+
 @media (max-width: 1024px) {
   body {
     margin: 10px;
@@ -337,6 +358,10 @@ button.small {
   .photo-note-input,
   .screen-only {
     display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
   }
 
   .report-page {
@@ -415,7 +440,7 @@ button.small {
   </div>
 
   <div>
-    <input 
+    <input
       type="file"
       id="cameraInput"
       accept="image/*"
@@ -423,8 +448,17 @@ button.small {
       class="hidden"
       onchange="handlePhotoCapture(event)"
     >
+
+    <input
+      type="file"
+      id="galleryInput"
+      accept="image/*"
+      class="hidden"
+      onchange="handlePhotoCapture(event)"
+    >
+
     <button onclick="openCamera()">Сделать фото</button>
-    <button class="secondary" onclick="document.getElementById('cameraInput').removeAttribute('capture'); openCamera();">Выбрать из галереи</button>
+    <button class="secondary" onclick="openGallery()">Выбрать из галереи</button>
     <button class="danger" onclick="clearRoomPhotos()">Удалить фото помещения</button>
   </div>
 </div>
@@ -435,12 +469,13 @@ button.small {
 const CHECKLIST_STORAGE_KEY = "av_vks_smr_checklist_final_v1";
 const PHOTO_DB_NAME = "av_vks_photo_report_db";
 const PHOTO_STORE_NAME = "photos";
-const PHOTO_META_KEY = "av_vks_photo_report_meta_v1";
+const PHOTO_META_KEY = "av_vks_photo_report_meta_v2";
 
 let roomCount = 14;
 let activeRoom = 1;
 let roomNames = {};
 let checklistIssues = {};
+let reportRoomMeta = {};
 let db = null;
 
 function todayISO() {
@@ -513,6 +548,7 @@ function loadPhotoReportMeta() {
     if (meta.floor) document.getElementById("floor").value = meta.floor;
     if (meta.activeRoom) activeRoom = Number(meta.activeRoom) || 1;
     if (meta.roomCount) roomCount = Number(meta.roomCount) || roomCount;
+    if (meta.reportRoomMeta) reportRoomMeta = meta.reportRoomMeta;
   } catch (e) {
     console.error("Ошибка чтения метаданных фотоотчёта", e);
   }
@@ -525,10 +561,74 @@ function savePhotoReportMeta() {
     office: document.getElementById("office").value,
     floor: document.getElementById("floor").value,
     activeRoom: activeRoom,
-    roomCount: roomCount
+    roomCount: roomCount,
+    reportRoomMeta: reportRoomMeta
   };
 
   localStorage.setItem(PHOTO_META_KEY, JSON.stringify(meta));
+}
+
+function getChecklistIssuesForRoom(roomNumber) {
+  const room = roomName(roomNumber);
+  const result = [];
+
+  Object.keys(checklistIssues).forEach(function(key) {
+    const issue = checklistIssues[key];
+
+    if (!issue) return;
+
+    if (issue.room === room || issue.room === "Переговорная " + roomNumber) {
+      const text = issue.issue || issue.item || "";
+      if (text) result.push(text);
+    }
+  });
+
+  return result;
+}
+
+function getRoomReportMeta(roomNumber) {
+  if (!reportRoomMeta[roomNumber]) {
+    const issues = getChecklistIssuesForRoom(roomNumber);
+
+    reportRoomMeta[roomNumber] = {
+      roomNumber: roomName(roomNumber),
+      roomTitle: "Переговорная",
+      issuesText: issues.join("\n")
+    };
+  }
+
+  return reportRoomMeta[roomNumber];
+}
+
+function updateRoomReportField(roomNumber, field, value) {
+  const meta = getRoomReportMeta(roomNumber);
+  meta[field] = value;
+  savePhotoReportMeta();
+}
+
+function formatIssuesForPrint(text) {
+  if (!text || !text.trim()) {
+    return "<div>Замечания отсутствуют.</div>";
+  }
+
+  const lines = text
+    .split("\n")
+    .map(line => line.trim())
+    .filter(Boolean);
+
+  if (!lines.length) {
+    return "<div>Замечания отсутствуют.</div>";
+  }
+
+  let html = "<ol>";
+
+  lines.forEach(function(line) {
+    html += "<li>" + escapeHtml(line) + "</li>";
+  });
+
+  html += "</ol>";
+
+  return html;
 }
 
 function openPhotoDb() {
@@ -663,29 +763,12 @@ function applyRoomCount() {
   renderReport();
 }
 
-function getChecklistIssuesForRoom(roomNumber) {
-  const room = roomName(roomNumber);
-  const result = [];
-
-  Object.keys(checklistIssues).forEach(function(key) {
-    const issue = checklistIssues[key];
-
-    if (!issue) return;
-
-    if (issue.room === room || issue.room === "Переговорная " + roomNumber) {
-      const text = issue.issue || issue.item || "";
-      if (text) result.push(text);
-    }
-  });
-
-  return result;
-}
-
 function getReportHeaderHtml(roomNumber, pageNumber, totalPages) {
   const city = escapeHtml(document.getElementById("city").value || "");
   const office = escapeHtml(document.getElementById("office").value || "");
   const floor = escapeHtml(document.getElementById("floor").value || "");
   const date = escapeHtml(document.getElementById("reportDate").value || todayISO());
+  const meta = getRoomReportMeta(roomNumber);
 
   return `
     <div class="report-header">
@@ -702,38 +785,48 @@ function getReportHeaderHtml(roomNumber, pageNumber, totalPages) {
 
     <div class="room-info">
       <div>№ помещения</div>
-      <div>${escapeHtml(roomName(roomNumber))}</div>
+      <div>
+        <input
+          class="report-inline-input screen-only"
+          value="${escapeHtml(meta.roomNumber)}"
+          onchange="updateRoomReportField(${roomNumber}, 'roomNumber', this.value)"
+        >
+        <span class="print-only">${escapeHtml(meta.roomNumber)}</span>
+      </div>
+
       <div>Наименование помещения</div>
-      <div>Переговорная</div>
+      <div>
+        <input
+          class="report-inline-input screen-only"
+          value="${escapeHtml(meta.roomTitle)}"
+          onchange="updateRoomReportField(${roomNumber}, 'roomTitle', this.value)"
+        >
+        <span class="print-only">${escapeHtml(meta.roomTitle)}</span>
+      </div>
     </div>
   `;
 }
 
 function renderIssuesBlock(roomNumber) {
-  const issues = getChecklistIssuesForRoom(roomNumber);
+  const meta = getRoomReportMeta(roomNumber);
+  const text = meta.issuesText || "";
 
-  let html = `
+  return `
     <div class="issues-block">
       <div class="issues-title">Список замечаний</div>
-      <div class="issues-list">
-  `;
 
-  if (!issues.length) {
-    html += `<div>Замечания из чек-листа отсутствуют.</div>`;
-  } else {
-    html += `<ol>`;
-    issues.forEach(function(issue) {
-      html += `<li>${escapeHtml(issue)}</li>`;
-    });
-    html += `</ol>`;
-  }
+      <div class="issues-list screen-only">
+        <textarea
+          class="issues-edit-textarea"
+          onchange="updateRoomReportField(${roomNumber}, 'issuesText', this.value)"
+        >${escapeHtml(text)}</textarea>
+      </div>
 
-  html += `
+      <div class="issues-list print-only">
+        ${formatIssuesForPrint(text)}
       </div>
     </div>
   `;
-
-  return html;
 }
 
 function renderReport() {
@@ -766,7 +859,7 @@ function renderReport() {
 
 function goToChecklist() {
   savePhotoReportMeta();
- window.location.href = "./index.html";
+  window.location.href = "index.html";
 }
 
 ["reportDate", "city", "office", "floor"].forEach(function(id) {
@@ -779,7 +872,13 @@ function goToChecklist() {
 });
 function openCamera() {
   const input = document.getElementById("cameraInput");
-  input.setAttribute("capture", "environment");
+  input.value = "";
+  input.click();
+}
+
+function openGallery() {
+  const input = document.getElementById("galleryInput");
+  input.value = "";
   input.click();
 }
 
@@ -882,11 +981,13 @@ function createPhotoCard(photo) {
 
   inner.appendChild(img);
 
+  let overlay = null;
+
   if (photo.note) {
-    const note = document.createElement("div");
-    note.className = "photo-note-overlay";
-    note.textContent = photo.note;
-    inner.appendChild(note);
+    overlay = document.createElement("div");
+    overlay.className = "photo-note-overlay";
+    overlay.textContent = photo.note;
+    inner.appendChild(overlay);
   }
 
   card.appendChild(inner);
@@ -906,9 +1007,26 @@ function createPhotoCard(photo) {
   noteInput.className = "photo-note-input screen-only";
   noteInput.placeholder = "Пометка поверх фото";
   noteInput.value = photo.note || "";
+
   noteInput.addEventListener("input", function() {
     photo.note = noteInput.value;
-    savePhotoRecord(photo).then(renderReport);
+
+    if (!overlay && photo.note.trim()) {
+      overlay = document.createElement("div");
+      overlay.className = "photo-note-overlay";
+      inner.appendChild(overlay);
+    }
+
+    if (overlay) {
+      overlay.textContent = photo.note;
+
+      if (!photo.note.trim()) {
+        overlay.remove();
+        overlay = null;
+      }
+    }
+
+    savePhotoRecord(photo);
   });
 
   card.appendChild(noteInput);
@@ -1068,7 +1186,8 @@ function exportPhotoReport() {
         office: document.getElementById("office").value,
         floor: document.getElementById("floor").value,
         roomCount: roomCount,
-        activeRoom: activeRoom
+        activeRoom: activeRoom,
+        reportRoomMeta: reportRoomMeta
       },
       roomNames: roomNames,
       photos: photoData
@@ -1112,6 +1231,10 @@ function importPhotoReport(event) {
         document.getElementById("floor").value = data.meta.floor || "";
         roomCount = Number(data.meta.roomCount) || roomCount;
         activeRoom = Number(data.meta.activeRoom) || activeRoom;
+
+        if (data.meta.reportRoomMeta) {
+          reportRoomMeta = data.meta.reportRoomMeta;
+        }
       }
 
       if (data.roomNames) {
@@ -1235,4 +1358,3 @@ initPhotoReport();
 
 </body>
 </html>
-
